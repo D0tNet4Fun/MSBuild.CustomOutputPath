@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MSBuild 14.0 Reference", "MSBuild 14.0 Reference", "{A5D2D34A-0A63-4F44-ABDF-6E8F5C88C2A5}"
+	ProjectSection(SolutionItems) = preProject
+		C:\Program Files (x86)\MSBuild\14.0\Bin\Microsoft.Common.CurrentVersion.targets = C:\Program Files (x86)\MSBuild\14.0\Bin\Microsoft.Common.CurrentVersion.targets
+		C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.props = C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{26FFAD17-F9FE-44EC-8A0F-74541A405534}"
+	ProjectSection(SolutionItems) = preProject
+		DotNet4Fun.CustomOutputPath.props = DotNet4Fun.CustomOutputPath.props
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
