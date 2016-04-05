@@ -38,6 +38,10 @@
 
     <!-- override the IntermediateOutputPath if it is set and if it is relative; otherwise MSBuild sets it later -->
     <IntermediateOutputPath Condition="'$(IntermediateOutputPath)' != '' AND !$([System.IO.Path]::IsPathRooted('$(IntermediateOutputPath)'))">$(ProjectBaseOutputPath)$(IntermediateOutputPath)</IntermediateOutputPath>
+
+    <!-- override the OutDir if it is not set at all or if it is relative -->
+    <OutDir Condition="'$(OutDir)' == ''">$(ProjectBaseOutputPath)$(OutputPath)</OutDir>
+    <OutDir Condition="'$(OutDir)' != '' AND !$([System.IO.Path]::IsPathRooted('$(OutDir)'))">$(ProjectBaseOutputPath)$(OutDir)</OutDir>
   </PropertyGroup>
 
 </Project>
