@@ -4,6 +4,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <UsingTask TaskName="CreateSymlink" AssemblyFile="$(MSBuildUserExtensionsPath)\$(MSBuildToolsVersion)\DotNet4Fun.CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="QuerySymlink" AssemblyFile="$(MSBuildUserExtensionsPath)\$(MSBuildToolsVersion)\DotNet4Fun.CustomOutputPath.Tasks.dll" />
 
   <PropertyGroup>
     <BuildDependsOn>ConfigureOutDir;$(BuildDependsOn)</BuildDependsOn>
@@ -37,6 +38,19 @@
     <Message Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
              Importance="normal" Text="Deleting default TargetDir '$(_DefaultTargetDir)' before linking it to custom TargetDir" />
     <RemoveDir Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
+               Directories="$(_DefaultTargetDir)" />
+    <!-- if the default TargetDir exists and it is a symlink which points to a different location, then delete it -->
+    <QuerySymlink Condition="$(_IsDefaultTargetDirectorySymlink)" LinkName="$(_DefaultTargetDir)">
+      <Output TaskParameter="TargetName" PropertyName="_CurrentTargetDir" />
+    </QuerySymlink>
+    <PropertyGroup>
+      <_CurrentTargetDir Condition="'$(_CurrentTargetDir)' != '' AND !HasTrailingSlash('$(_CurrentTargetDir)')">$(_CurrentTargetDir)\</_CurrentTargetDir>
+    </PropertyGroup>
+    <Message Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != ''"
+             Importance="low" Text="The default target directory is a symlink which points to '$(_CurrentTargetDir)'" />
+    <Message Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != '' AND $(_CurrentTargetDir) != '$(TargetDir)'"
+             Importance="normal" Text="Deleting current TargetDir symlink '$(_DefaultTargetDir)' because it points to another TargetDir '$(_CurrentTargetDir)'" />
+    <RemoveDir Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != '' AND $(_CurrentTargetDir) != '$(TargetDir)'"
                Directories="$(_DefaultTargetDir)" />
     <!-- create a symlink to TargetDir -->
     <Message Condition="!Exists('$(_DefaultTargetDir)')"
