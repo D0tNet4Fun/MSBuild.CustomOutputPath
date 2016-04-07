@@ -1,0 +1,48 @@
+﻿<!--EXTERNAL_PROPERTIES: MSBuildUserExtensionsPath-->
+<!--EXTERNAL_PROPERTIES: MSBuildToolsVersion;UsingCustomOutputPath;BuildingInsideVisualStudio-->
+
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <UsingTask TaskName="CreateSymlink" AssemblyFile="$(MSBuildUserExtensionsPath)\$(MSBuildToolsVersion)\DotNet4Fun.CustomOutputPath.Tasks.dll" />
+
+  <PropertyGroup>
+    <BuildDependsOn>ConfigureOutDir;$(BuildDependsOn)</BuildDependsOn>
+  </PropertyGroup>
+
+  <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideVisualStudio)' == 'true'"
+          DependsOnTargets="GetDefaultTargetDir">
+    
+    <CallTarget Condition="$(UsingCustomOutputPath) AND '$(_DefaultTargetDir)' != '$(TargetDir)'"
+                Targets="LinkDefaultTargetDirToCustomTargetDir" />
+  </Target>
+
+  <Target Name="GetDefaultTargetDir">
+    <!-- fail if the OutputPath is not set; this can happen if the target is not run after AssignProjectConfiguration -->
+    <Error Condition="'$(OutputPath)' == ''" Text="OutputPath is not set" />
+    <PropertyGroup>
+      <_DefaultTargetDir Condition="!$([System.IO.Path]::IsPathRooted('$(OutputPath)'))">$(MSBuildProjectDirectory)\$(OutputPath)</_DefaultTargetDir>
+      <!-- example ...\MySolution\MyProject\bin\debug -->
+      <_DefaultTargetDir Condition="$([System.IO.Path]::IsPathRooted('$(OutputPath)'))">$(OutputPath)</_DefaultTargetDir>
+    </PropertyGroup>
+    <!-- fail if the default TargetDir could not be determined -->
+    <Error Condition="'$(_DefaultTargetDir)' == ''" Text="Could not determine the default TargetDir" />
+  </Target>
+
+  <Target Name="LinkDefaultTargetDirToCustomTargetDir">
+    <!-- if the default TargetDir exists and it is not a symlink, then delete it -->
+    <PropertyGroup>
+      <_IsDefaultTargetDirectorySymlink Condition="'$(_IsDefaultTargetDirectorySymlink)' == ''">false</_IsDefaultTargetDirectorySymlink>
+      <_IsDefaultTargetDirectorySymlink Condition="Exists('$(_DefaultTargetDir)') AND $([MSBuild]::BitwiseAnd(1024, $([System.IO.File]::GetAttributes('$(_DefaultTargetDir)')))) == '1024'">true</_IsDefaultTargetDirectorySymlink>
+    </PropertyGroup>
+    <Message Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
+             Importance="normal" Text="Deleting default TargetDir '$(_DefaultTargetDir)' before linking it to custom TargetDir" />
+    <RemoveDir Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
+               Directories="$(_DefaultTargetDir)" />
+    <!-- create a symlink to TargetDir -->
+    <Message Condition="!Exists('$(_DefaultTargetDir)')"
+             Importance="normal" Text="Creating symlink from default TargetDir '$(_DefaultTargetDir)' to custom TargetDir '$(TargetDir)'" />
+    <CreateSymlink Condition="!Exists('$(_DefaultTargetDir)')"
+                   LinkName="$(_DefaultTargetDir)" TargetName="$(TargetDir)" TargetType="Directory" />
+  </Target>
+
+</Project>

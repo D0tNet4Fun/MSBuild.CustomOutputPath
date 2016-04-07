@@ -9,7 +9,7 @@
   -->
 
   <!-- Hint: change condition below to 'false' to restore default build behavior -->
-  <PropertyGroup Condition="true">
+  <PropertyGroup Condition="'$(SolutionName)' != 'MSBuild.CustomOutputPath'">
     <!-- set the BaseOutput as value of environment variable 'MSBuildBaseOutputPath' or use a default value -->
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">$(MSBuildBaseOutputPath)</BaseOutputPath>
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">R:\Build\</BaseOutputPath>
