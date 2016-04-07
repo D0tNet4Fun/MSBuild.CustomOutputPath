@@ -15,28 +15,34 @@
     
     <CallTarget Condition="$(UsingCustomOutputPath) AND '$(_DefaultTargetDir)' != '$(TargetDir)'"
                 Targets="LinkDefaultTargetDirToCustomTargetDir" />
+    <CallTarget Condition="!$(UsingCustomOutputPath) AND $(_IsDefaultTargetDirectorySymlink)"
+                Targets="RestoreDefaultTargetDir" />
   </Target>
 
   <Target Name="GetDefaultTargetDir">
     <!-- fail if the OutputPath is not set; this can happen if the target is not run after AssignProjectConfiguration -->
     <Error Condition="'$(OutputPath)' == ''" Text="OutputPath is not set" />
+    
     <PropertyGroup>
       <_DefaultTargetDir Condition="!$([System.IO.Path]::IsPathRooted('$(OutputPath)'))">$(MSBuildProjectDirectory)\$(OutputPath)</_DefaultTargetDir>
       <!-- example ...\MySolution\MyProject\bin\debug -->
       <_DefaultTargetDir Condition="$([System.IO.Path]::IsPathRooted('$(OutputPath)'))">$(OutputPath)</_DefaultTargetDir>
     </PropertyGroup>
+    
     <!-- fail if the default TargetDir could not be determined -->
     <Error Condition="'$(_DefaultTargetDir)' == ''" Text="Could not determine the default TargetDir" />
-  </Target>
 
-  <Target Name="LinkDefaultTargetDirToCustomTargetDir">
-    <!-- if the default TargetDir exists and it is not a symlink, then delete it -->
+    <!-- check if the default TargetDir is a symlink -->
     <PropertyGroup>
       <_IsDefaultTargetDirectorySymlink Condition="'$(_IsDefaultTargetDirectorySymlink)' == ''">false</_IsDefaultTargetDirectorySymlink>
       <_IsDefaultTargetDirectorySymlink Condition="Exists('$(_DefaultTargetDir)') AND $([MSBuild]::BitwiseAnd(1024, $([System.IO.File]::GetAttributes('$(_DefaultTargetDir)')))) == '1024'">true</_IsDefaultTargetDirectorySymlink>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="LinkDefaultTargetDirToCustomTargetDir">
+    <!-- if the default TargetDir exists and it is not a symlink, then delete it -->
     <Message Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
-             Importance="normal" Text="Deleting default TargetDir '$(_DefaultTargetDir)' before linking it to custom TargetDir" />
+             Importance="normal" Text="Deleting default target directory '$(_DefaultTargetDir)' before linking it to custom target directory" />
     <RemoveDir Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
                Directories="$(_DefaultTargetDir)" />
     <!-- if the default TargetDir exists and it is a symlink which points to a different location, then delete it -->
@@ -49,14 +55,20 @@
     <Message Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != ''"
              Importance="low" Text="The default target directory is a symlink which points to '$(_CurrentTargetDir)'" />
     <Message Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != '' AND $(_CurrentTargetDir) != '$(TargetDir)'"
-             Importance="normal" Text="Deleting current TargetDir symlink '$(_DefaultTargetDir)' because it points to another TargetDir '$(_CurrentTargetDir)'" />
+             Importance="normal" Text="Deleting current target directory symlink '$(_DefaultTargetDir)' because it points to another target directory '$(_CurrentTargetDir)'" />
     <RemoveDir Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != '' AND $(_CurrentTargetDir) != '$(TargetDir)'"
                Directories="$(_DefaultTargetDir)" />
     <!-- create a symlink to TargetDir -->
     <Message Condition="!Exists('$(_DefaultTargetDir)')"
-             Importance="normal" Text="Creating symlink from default TargetDir '$(_DefaultTargetDir)' to custom TargetDir '$(TargetDir)'" />
+             Importance="normal" Text="Creating symlink from default target directory '$(_DefaultTargetDir)' to custom target directory '$(TargetDir)'" />
     <CreateSymlink Condition="!Exists('$(_DefaultTargetDir)')"
                    LinkName="$(_DefaultTargetDir)" TargetName="$(TargetDir)" TargetType="Directory" />
+  </Target>
+
+  <Target Name="RestoreDefaultTargetDir">
+    <Message Importance="normal" Text="Recreating the default target directory '$(_DefaultTargetDir)' because it is a symlink and the output path is not custom anymore" />
+    <RemoveDir Directories="$(_DefaultTargetDir)" />
+    <MakeDir Directories="$(_DefaultTargetDir)" />
   </Target>
 
 </Project>
