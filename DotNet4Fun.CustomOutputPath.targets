@@ -1,10 +1,11 @@
 ﻿<!--EXTERNAL_PROPERTIES: MSBuildUserExtensionsPath-->
-<!--EXTERNAL_PROPERTIES: MSBuildToolsVersion;UsingCustomOutputPath;BuildingInsideVisualStudio-->
+<!--EXTERNAL_PROPERTIES: MSBuildToolsVersion;UsingCustomOutputPath;BuildingInsideVisualStudio;UseVSHostingProcess-->
 
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <UsingTask TaskName="CreateSymlink" AssemblyFile="$(MSBuildUserExtensionsPath)\$(MSBuildToolsVersion)\DotNet4Fun.CustomOutputPath.Tasks.dll" />
   <UsingTask TaskName="QuerySymlink" AssemblyFile="$(MSBuildUserExtensionsPath)\$(MSBuildToolsVersion)\DotNet4Fun.CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile="$(MSBuildUserExtensionsPath)\$(MSBuildToolsVersion)\DotNet4Fun.CustomOutputPath.Tasks.dll" />
 
   <PropertyGroup>
     <BuildDependsOn>ConfigureOutDir;$(BuildDependsOn)</BuildDependsOn>
@@ -12,7 +13,7 @@
 
   <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideVisualStudio)' == 'true'"
           DependsOnTargets="GetDefaultTargetDir">
-    
+
     <CallTarget Condition="$(UsingCustomOutputPath) AND '$(_DefaultTargetDir)' != '$(TargetDir)'"
                 Targets="LinkDefaultTargetDirToCustomTargetDir" />
     <CallTarget Condition="!$(UsingCustomOutputPath) AND $(_IsDefaultTargetDirectorySymlink)"
@@ -22,13 +23,13 @@
   <Target Name="GetDefaultTargetDir">
     <!-- fail if the OutputPath is not set; this can happen if the target is not run after AssignProjectConfiguration -->
     <Error Condition="'$(OutputPath)' == ''" Text="OutputPath is not set" />
-    
+
     <PropertyGroup>
       <_DefaultTargetDir Condition="!$([System.IO.Path]::IsPathRooted('$(OutputPath)'))">$(MSBuildProjectDirectory)\$(OutputPath)</_DefaultTargetDir>
       <!-- example ...\MySolution\MyProject\bin\debug -->
       <_DefaultTargetDir Condition="$([System.IO.Path]::IsPathRooted('$(OutputPath)'))">$(OutputPath)</_DefaultTargetDir>
     </PropertyGroup>
-    
+
     <!-- fail if the default TargetDir could not be determined -->
     <Error Condition="'$(_DefaultTargetDir)' == ''" Text="Could not determine the default TargetDir" />
 
@@ -43,8 +44,8 @@
     <!-- if the default TargetDir exists and it is not a symlink, then delete it -->
     <Message Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
              Importance="normal" Text="Deleting default target directory '$(_DefaultTargetDir)' before linking it to custom target directory" />
-    <RemoveDir Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
-               Directories="$(_DefaultTargetDir)" />
+    <CallTarget Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
+                Targets="DeleteDefaultTargetDir" />
     <!-- if the default TargetDir exists and it is a symlink which points to a different location, then delete it -->
     <QuerySymlink Condition="$(_IsDefaultTargetDirectorySymlink)" LinkName="$(_DefaultTargetDir)">
       <Output TaskParameter="TargetName" PropertyName="_CurrentTargetDir" />
@@ -56,8 +57,8 @@
              Importance="low" Text="The default target directory is a symlink which points to '$(_CurrentTargetDir)'" />
     <Message Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != '' AND $(_CurrentTargetDir) != '$(TargetDir)'"
              Importance="normal" Text="Deleting current target directory symlink '$(_DefaultTargetDir)' because it points to another target directory '$(_CurrentTargetDir)'" />
-    <RemoveDir Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != '' AND $(_CurrentTargetDir) != '$(TargetDir)'"
-               Directories="$(_DefaultTargetDir)" />
+    <CallTarget Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != '' AND $(_CurrentTargetDir) != '$(TargetDir)'"
+                Targets="DeleteDefaultTargetDir" />
     <!-- create a symlink to TargetDir -->
     <Message Condition="!Exists('$(_DefaultTargetDir)')"
              Importance="normal" Text="Creating symlink from default target directory '$(_DefaultTargetDir)' to custom target directory '$(TargetDir)'" />
@@ -67,8 +68,22 @@
 
   <Target Name="RestoreDefaultTargetDir">
     <Message Importance="normal" Text="Recreating the default target directory '$(_DefaultTargetDir)' because it is a symlink and the output path is not custom anymore" />
-    <RemoveDir Directories="$(_DefaultTargetDir)" />
+    <CallTarget Targets="DeleteDefaultTargetDir" />
     <MakeDir Directories="$(_DefaultTargetDir)" />
+  </Target>
+
+  <Target Name="DeleteDefaultTargetDir" DependsOnTargets="FailIfVisualStudioHostingProcessIsRunning">
+    <RemoveDir Directories="$(_DefaultTargetDir)" />
+  </Target>
+
+  <Target Name="FailIfVisualStudioHostingProcessIsRunning" Condition="'$(TargetExt)' == '.exe' AND '$(UseVSHostingProcess)' != 'false'">
+    <!-- if the project is a EXE and UseVSHostingProcess is not false, then check if the VS hosting process is running and fail the build if so -->
+    <Message Importance="normal" Text="Checking if the VS hosting process is running" />
+    <LookUpVisualStudioHostingProcess TargetName="$(TargetName)">
+      <Output TaskParameter="IsRunning" PropertyName="_IsVSHostingProcessRunning" />
+    </LookUpVisualStudioHostingProcess>
+    <Error Condition="'$(_IsVSHostingProcessRunning)'" 
+           Text="The project output directory cannot be changed while the Visual Studio hosting process is running. Please disable it manually from Project Properties > Debug. You can re-enable it after the build." />
   </Target>
 
 </Project>
