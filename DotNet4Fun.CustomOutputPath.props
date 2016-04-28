@@ -1,4 +1,5 @@
-﻿<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<!-- This runs before Microsoft.Common.targets -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!--
     The list of properties which change build behavior:
@@ -20,6 +21,9 @@
     <UsingCustomOutputPath Condition="'$(UsingCustomOutputPath)' == ''">false</UsingCustomOutputPath>
     <UsingCustomOutputPath Condition="'$(BaseOutputPath)' != ''" >true</UsingCustomOutputPath>
   </PropertyGroup>
+
+  <!-- extensibility: allow solutions to define custom output path logic using Before.CustomOutputPath.targets if it exists in solution's directory -->
+  <Import Project="$(SolutionDir)Before.CustomOutputPath.targets" Condition="Exists('$(SolutionDir)Before.CustomOutputPath.targets')"/>
 
   <PropertyGroup Condition="$(BaseOutputPath) != ''">
     <!-- make sure the BaseOutputPath ends with \ -->
