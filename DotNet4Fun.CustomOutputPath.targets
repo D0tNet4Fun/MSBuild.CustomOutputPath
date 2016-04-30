@@ -9,7 +9,7 @@
   <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile="$(MSBuildUserExtensionsPath)\$(MSBuildToolsVersion)\DotNet4Fun.CustomOutputPath.Tasks.dll" />
 
   <PropertyGroup>
-    <BuildDependsOn>ConfigureOutDir;$(BuildDependsOn)</BuildDependsOn>
+    <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);ConfigureOutDir</PrepareForBuildDependsOn>
   </PropertyGroup>
 
   <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideVisualStudio)' == 'true'"
