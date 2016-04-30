@@ -10,6 +10,7 @@
 
   <PropertyGroup>
     <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);ConfigureOutDir</PrepareForBuildDependsOn>
+    <AssemblySearchPaths Condition="$(UsingCustomOutputPath)">$(OutputPath);$(AssemblySearchPaths)</AssemblySearchPaths>
   </PropertyGroup>
 
   <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideVisualStudio)' == 'true'"
