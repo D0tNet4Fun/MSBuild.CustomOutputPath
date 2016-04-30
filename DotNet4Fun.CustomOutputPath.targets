@@ -1,12 +1,8 @@
-﻿<!--EXTERNAL_PROPERTIES: MSBuildUserExtensionsPath-->
+﻿<!--EXTERNAL_PROPERTIES: MSBuildThisFileDirectory-->
 <!--EXTERNAL_PROPERTIES: MSBuildToolsVersion;UsingCustomOutputPath;BuildingInsideVisualStudio;UseVSHostingProcess-->
 
 <!-- This runs after Microsoft.Common.targets -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
-  <UsingTask TaskName="CreateSymlink" AssemblyFile="$(MSBuildUserExtensionsPath)\$(MSBuildToolsVersion)\DotNet4Fun.CustomOutputPath.Tasks.dll" />
-  <UsingTask TaskName="QuerySymlink" AssemblyFile="$(MSBuildUserExtensionsPath)\$(MSBuildToolsVersion)\DotNet4Fun.CustomOutputPath.Tasks.dll" />
-  <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile="$(MSBuildUserExtensionsPath)\$(MSBuildToolsVersion)\DotNet4Fun.CustomOutputPath.Tasks.dll" />
 
   <PropertyGroup>
     <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);ConfigureOutDir</PrepareForBuildDependsOn>
@@ -90,5 +86,9 @@
   
   <!-- extensibility: allow solutions to define custom output path logic using After.CustomOutputPath.targets, if it exists in solution's directory -->
   <Import Project="$(SolutionDir)After.CustomOutputPath.targets" Condition="Exists('$(SolutionDir)After.CustomOutputPath.targets')"/>
+
+  <UsingTask TaskName="CreateSymlink" AssemblyFile="$(MSBuildThisFileDirectory)..\..\DotNet4Fun.CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="QuerySymlink" AssemblyFile="$(MSBuildThisFileDirectory)..\..\DotNet4Fun.CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile="$(MSBuildThisFileDirectory)..\..\DotNet4Fun.CustomOutputPath.Tasks.dll" />
 
 </Project>
