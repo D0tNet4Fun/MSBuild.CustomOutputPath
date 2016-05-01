@@ -3,8 +3,9 @@ This MSBuild extension allows customizing the output path when building a soluti
 
 ## Content
 The extension consists of:
-- a .props file which runs before Microsoft.Common.targets
-- a .targets file which runs after Microsoft.Common.targets
+- a .props file which can be edited to configure the extension
+- a before.targets file which runs before Microsoft.Common.targets
+- a after.targets file which runs after Microsoft.Common.targets
 - a .dll which contains the MSBuild tasks used by the targets
 
 ## How it works
@@ -13,8 +14,8 @@ The final paths may look like `$(BaseOutputPath)\MySolution\MyProject\obj\Debug`
 
 ## Features
 
-#### Define the base output path
-There are several ways to define the base output path. You can set the environment variable `MSBuildBaseOutputPath` or edit the .props file and change it there. The default value is _R:\Build_.
+#### Configure the base output path
+There are several ways to configure the base output path. You can set the environment variable `MSBuildBaseOutputPath` or edit the .props file and change it there. The default value is **R:\Build**.
 
 #### Link default target directory to the custom target directory [Visual Studio only]
 When building from inside Visual Studio, the project's default target directory i.e. `bin\debug` will be converted to a symbolic link which points to the custom output directory. This ensures the IDE can run startup projects or unit test projects using the base output path.
