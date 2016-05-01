@@ -60,6 +60,7 @@
     <!-- create a symlink to TargetDir -->
     <Message Condition="!Exists('$(_DefaultTargetDir)')"
              Importance="normal" Text="Creating symlink from default target directory '$(_DefaultTargetDir)' to custom target directory '$(TargetDir)'" />
+    <MakeDir Condition="!Exists('$(_DefaultTargetDir)')" Directories="$([System.IO.Path]::GetDirectoryName('$(_DefaultTargetDir)')))" />
     <CreateSymlink Condition="!Exists('$(_DefaultTargetDir)')"
                    LinkName="$(_DefaultTargetDir)" TargetName="$(TargetDir)" TargetType="Directory" />
   </Target>
