@@ -16,10 +16,4 @@
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">R:\Build\</BaseOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- define property UsingCustomOutputPath which can be used in scripts to detect if a custom output path is being used -->
-    <UsingCustomOutputPath Condition="'$(UsingCustomOutputPath)' == ''">false</UsingCustomOutputPath>
-    <UsingCustomOutputPath Condition="'$(BaseOutputPath)' != ''" >true</UsingCustomOutputPath>
-  </PropertyGroup>
-
 </Project>
