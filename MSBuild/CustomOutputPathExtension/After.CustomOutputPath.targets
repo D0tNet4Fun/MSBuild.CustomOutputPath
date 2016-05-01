@@ -9,15 +9,6 @@
     <AssemblySearchPaths Condition="$(UsingCustomOutputPath)">$(OutputPath);$(AssemblySearchPaths)</AssemblySearchPaths>
   </PropertyGroup>
 
-  <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideVisualStudio)' == 'true'"
-          DependsOnTargets="GetDefaultTargetDir">
-
-    <CallTarget Condition="$(UsingCustomOutputPath) AND '$(_DefaultTargetDir)' != '$(TargetDir)'"
-                Targets="LinkDefaultTargetDirToCustomTargetDir" />
-    <CallTarget Condition="!$(UsingCustomOutputPath) AND $(_IsDefaultTargetDirectorySymlink)"
-                Targets="RestoreDefaultTargetDir" />
-  </Target>
-
   <Target Name="GetDefaultTargetDir">
     <!-- fail if the OutputPath is not set; this can happen if the target is not run after AssignProjectConfiguration -->
     <Error Condition="'$(OutputPath)' == ''" Text="OutputPath is not set" />
@@ -36,6 +27,15 @@
       <_IsDefaultTargetDirectorySymlink Condition="'$(_IsDefaultTargetDirectorySymlink)' == ''">false</_IsDefaultTargetDirectorySymlink>
       <_IsDefaultTargetDirectorySymlink Condition="Exists('$(_DefaultTargetDir)') AND $([MSBuild]::BitwiseAnd(1024, $([System.IO.File]::GetAttributes('$(_DefaultTargetDir)')))) == '1024'">true</_IsDefaultTargetDirectorySymlink>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideVisualStudio)' == 'true'"
+          DependsOnTargets="GetDefaultTargetDir">
+
+    <CallTarget Condition="$(UsingCustomOutputPath) AND '$(_DefaultTargetDir)' != '$(TargetDir)'"
+                Targets="LinkDefaultTargetDirToCustomTargetDir" />
+    <CallTarget Condition="!$(UsingCustomOutputPath) AND $(_IsDefaultTargetDirectorySymlink)"
+                Targets="RestoreDefaultTargetDir" />
   </Target>
 
   <Target Name="LinkDefaultTargetDirToCustomTargetDir">
@@ -65,14 +65,14 @@
                    LinkName="$(_DefaultTargetDir)" TargetName="$(TargetDir)" TargetType="Directory" />
   </Target>
 
+  <Target Name="DeleteDefaultTargetDir" DependsOnTargets="FailIfVisualStudioHostingProcessIsRunning">
+    <RemoveDir Directories="$(_DefaultTargetDir)" />
+  </Target>
+
   <Target Name="RestoreDefaultTargetDir">
     <Message Importance="normal" Text="Recreating the default target directory '$(_DefaultTargetDir)' because it is a symlink and the output path is not custom anymore" />
     <CallTarget Targets="DeleteDefaultTargetDir" />
     <MakeDir Directories="$(_DefaultTargetDir)" />
-  </Target>
-
-  <Target Name="DeleteDefaultTargetDir" DependsOnTargets="FailIfVisualStudioHostingProcessIsRunning">
-    <RemoveDir Directories="$(_DefaultTargetDir)" />
   </Target>
 
   <Target Name="FailIfVisualStudioHostingProcessIsRunning" Condition="'$(TargetExt)' == '.exe' AND '$(UseVSHostingProcess)' != 'false'">
