@@ -11,11 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MSBuild 14.0 Reference", "M
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{26FFAD17-F9FE-44EC-8A0F-74541A405534}"
 	ProjectSection(SolutionItems) = preProject
-		DotNet4Fun.CustomOutputPath.props = DotNet4Fun.CustomOutputPath.props
-		DotNet4Fun.CustomOutputPath.targets = DotNet4Fun.CustomOutputPath.targets
+		CustomOutputPath.props = CustomOutputPath.props
+		CustomOutputPath.targets = CustomOutputPath.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNet4Fun.CustomOutputPath.Tasks", "DotNet4Fun.CustomOutputPath.Tasks\DotNet4Fun.CustomOutputPath.Tasks.csproj", "{03563CFD-FC7E-4AA1-BBAD-DDFCC6076B75}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomOutputPath.Tasks", "CustomOutputPath.Tasks\CustomOutputPath.Tasks.csproj", "{03563CFD-FC7E-4AA1-BBAD-DDFCC6076B75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

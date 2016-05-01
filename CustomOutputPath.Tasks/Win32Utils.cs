@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace DotNet4Fun.CustomOutputPath.Tasks
+namespace CustomOutputPath.Tasks
 {
     internal static class Win32Utils
     {

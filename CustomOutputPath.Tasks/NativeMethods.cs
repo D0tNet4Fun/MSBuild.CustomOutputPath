@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 
-namespace DotNet4Fun.CustomOutputPath.Tasks
+namespace CustomOutputPath.Tasks
 {
     internal static class NativeMethods
     {

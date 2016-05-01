@@ -2,7 +2,7 @@
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace DotNet4Fun.CustomOutputPath.Tasks.Tasks
+namespace CustomOutputPath.Tasks.Tasks
 {
     public class LookUpVisualStudioHostingProcess : Task
     {

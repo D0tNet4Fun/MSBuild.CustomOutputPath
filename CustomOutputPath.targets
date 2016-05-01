@@ -88,8 +88,8 @@
   <!-- extensibility: allow solutions to define custom output path logic using After.CustomOutputPath.targets, if it exists in solution's directory -->
   <Import Project="$(SolutionDir)After.CustomOutputPath.targets" Condition="Exists('$(SolutionDir)After.CustomOutputPath.targets')"/>
 
-  <UsingTask TaskName="CreateSymlink" AssemblyFile="$(MSBuildThisFileDirectory)..\..\DotNet4Fun.CustomOutputPath.Tasks.dll" />
-  <UsingTask TaskName="QuerySymlink" AssemblyFile="$(MSBuildThisFileDirectory)..\..\DotNet4Fun.CustomOutputPath.Tasks.dll" />
-  <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile="$(MSBuildThisFileDirectory)..\..\DotNet4Fun.CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="CreateSymlink" AssemblyFile="$(MSBuildThisFileDirectory)CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="QuerySymlink" AssemblyFile="$(MSBuildThisFileDirectory)CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile="$(MSBuildThisFileDirectory)CustomOutputPath.Tasks.dll" />
 
 </Project>
