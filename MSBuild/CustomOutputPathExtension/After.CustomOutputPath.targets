@@ -1,4 +1,4 @@
-﻿<!--EXTERNAL_PROPERTIES: MSBuildThisFileDirectory;BuildingInsideVisualStudio;UseVSHostingProcess;BaseOutputDrive;UseLinksInOutputDirectory;UsingCustomOutputPath; -->
+﻿<!--EXTERNAL_PROPERTIES: BuildingInsideVisualStudio;UseVSHostingProcess;BaseOutputDrive;UseLinksInOutputDirectory;UsingCustomOutputPath; -->
 
 <!-- This runs after Microsoft.Common.targets -->
 
@@ -223,9 +223,9 @@
   <Import Project="$(SolutionDir)After.CustomOutputPath.targets" Condition="Exists('$(SolutionDir)After.CustomOutputPath.targets')"/>
 
   <!-- define tasks -->
-  <UsingTask TaskName="CreateSymlink" AssemblyFile="$(MSBuildThisFileDirectory)CustomOutputPath.Tasks.dll" />
-  <UsingTask TaskName="QuerySymlink" AssemblyFile="$(MSBuildThisFileDirectory)CustomOutputPath.Tasks.dll" />
-  <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile="$(MSBuildThisFileDirectory)CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="CreateSymlink" AssemblyFile=".\CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="QuerySymlink" AssemblyFile=".\CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile=".\CustomOutputPath.Tasks.dll" />
 
 </Project>
 <!-- ReSharper restore UnknownTask -->

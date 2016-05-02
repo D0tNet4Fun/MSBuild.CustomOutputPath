@@ -3,7 +3,7 @@
 <!-- This runs before Microsoft.Common.targets -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   
-  <Import Project="$(MSBuildThisFileDirectory)CustomOutputPath.props" />
+  <Import Project=".\CustomOutputPath.props" />
 
   <PropertyGroup>
     <!-- define property UsingCustomOutputPath which can be used in scripts to detect if a custom output path is being used -->

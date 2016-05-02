@@ -1,4 +1,4 @@
 ﻿<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\CustomOutputPathExtension\After.CustomOutputPath.targets')"
-          Project="$(MSBuildThisFileDirectory)..\..\..\CustomOutputPathExtension\After.CustomOutputPath.targets" />
+  <Import Condition="Exists('..\..\..\CustomOutputPathExtension\After.CustomOutputPath.targets')"
+          Project="..\..\..\CustomOutputPathExtension\After.CustomOutputPath.targets" />
 </Project>
