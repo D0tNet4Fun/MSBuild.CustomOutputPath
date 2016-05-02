@@ -1,12 +1,13 @@
-﻿<!--EXTERNAL_PROPERTIES: MSBuildThisFileDirectory-->
-<!--EXTERNAL_PROPERTIES: MSBuildToolsVersion;UsingCustomOutputPath;BuildingInsideVisualStudio;UseVSHostingProcess-->
+﻿<!--EXTERNAL_PROPERTIES: MSBuildThisFileDirectory;BuildingInsideVisualStudio;UseVSHostingProcess;BaseOutputDrive;UseLinksInOutputDirectory;UsingCustomOutputPath; -->
 
 <!-- This runs after Microsoft.Common.targets -->
+
+<!-- ReSharper disable UnknownTask -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
     <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);ConfigureOutDir</PrepareForBuildDependsOn>
-    <AssemblySearchPaths Condition="$(UsingCustomOutputPath)">$(OutputPath);$(AssemblySearchPaths)</AssemblySearchPaths>
+    <PrepareForRunDependsOn Condition="'$(UseLinksInOutputDirectory)' == 'true'">IgnoreBuildingInsideVisualStudio;$(PrepareForRunDependsOn);RestoreBuildingInsideVisualStudio</PrepareForRunDependsOn>
   </PropertyGroup>
 
   <Target Name="GetDefaultTargetDir">
@@ -84,6 +85,74 @@
     <Error Condition="'$(_IsVSHostingProcessRunning)'" 
            Text="The project output directory cannot be changed while the Visual Studio hosting process is running. Please disable it manually from Project Properties > Debug. You can re-enable it after the build." />
   </Target>
+
+  <Target Name="CreateLinksToReferences" 
+          Condition="'$(UseLinksInOutputDirectory)' == 'true' AND '@(ReferenceCopyLocalPaths)' != ''" 
+          AfterTargets="ResolveAssemblyReferences">
+    <!-- for each resolved reference which is not on the base output drive, assign a symlink on the base output drive
+           I.e if the original path is C:\Program Files (x86)\WiX Toolset v3.10\bin\wix.dll, then
+                  the assigned symlink will be $(SolutionBaseOutputPath)_References\C\Program Files (x86)\WiX Toolset v3.10\bin\wix.dll -->
+    
+    <!-- gather info about the references to find the ones which are not on the base output drive -->
+    <ItemGroup>
+      <ReferenceCopyLocalPaths>
+        <SourceDrive>$([System.IO.Path]::GetPathRoot('%(Identity)').Substring(0,1))</SourceDrive>
+        <!-- i.e. C -->
+      </ReferenceCopyLocalPaths>
+      <ReferenceCopyLocalPaths>
+        <SourceRelativePath>$([MSBuild]::MakeRelative('%(SourceDrive):\', '%(Identity)'))</SourceRelativePath>
+        <!-- i.e. Program Files (x86)\WiX Toolset v3.10\bin\wix.dll -->
+      </ReferenceCopyLocalPaths>
+
+      <!-- exclude the project references (%(ReferenceCopyLocalPaths.BuildReference) = true) -->
+      <ReferenceCopyLocalPathsOnDifferentDrive Include="@(ReferenceCopyLocalPaths)" 
+                                               Condition="'%(ReferenceCopyLocalPaths.BuildReference)' != 'true' AND '%(ReferenceCopyLocalPaths.SourceDrive)' != '$(BaseOutputDrive)'">
+        <Symlink>$(SolutionBaseOutputPath)_References\%(SourceDrive)\%(SourceRelativePath)</Symlink>
+      </ReferenceCopyLocalPathsOnDifferentDrive>
+    </ItemGroup>
+
+    <!-- for each ReferenceCopyLocalPathsOnDifferentDrive ensure the link's directory is available,
+         i.e. $(SolutionBaseOutputPath)_References\C\Program Files (x86)\WiX Toolset v3.10\bin  -->
+    <MakeDir Condition ="'@(ReferenceCopyLocalPathsOnDifferentDrive)' != ''"
+             Directories="$([System.IO.Path]::GetDirectoryName('%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)'))" />
+    <!-- for each ReferenceCopyLocalPathsOnDifferentDrive check if it already has a symlink in the _References directory and if so, that it points to the original path -->
+    <QuerySymlink Condition="'@(ReferenceCopyLocalPathsOnDifferentDrive)' != '' AND Exists('%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)')"
+                  LinkName="%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)">
+      <Output TaskParameter="TargetName" ItemName="CurrentReferenceSymlinkTarget" />
+    </QuerySymlink>
+    <!-- detect the current symlinks which are invalid and delete them; they are the ones in CurrentReferenceSymlinkTarget but not in ReferenceCopyLocalPathsOnDifferentDrive -->
+    <ItemGroup>
+      <InvalidSymlinkTarget Include="@(CurrentReferenceSymlinkTarget)" Exclude="@(ReferenceCopyLocalPathsOnDifferentDrive)" />
+    </ItemGroup>
+    <!-- ReSharper disable UnknownMetadata -->
+    <Message Condition="'@(InvalidSymlinkTarget)' != ''" Text="Symbolic link '%(InvalidSymlinkTarget.LinkName)' is invalid and needs to be recreated." />
+    <Delete Condition="'@(InvalidSymlinkTarget)' != ''" Files="@(InvalidSymlinkTarget->'%(LinkName)')" />
+    <!-- ReSharper restore UnknownMetadata -->
+
+    <!-- now we can proceed with creating the symlinks -->
+    <Message Condition ="'@(ReferenceCopyLocalPathsOnDifferentDrive)' != ''"
+             Text="Creating symlink for reference '%(ReferenceCopyLocalPathsOnDifferentDrive.Identity)' as '%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)'." />
+    <CreateSymlink Condition="'@(ReferenceCopyLocalPathsOnDifferentDrive)' != '' AND !Exists('%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)')"
+                   LinkName="%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)" TargetName="%(ReferenceCopyLocalPathsOnDifferentDrive.Identity)" />
+    <!-- finally, update ReferenceCopyLocalPaths to replace the ones on different drives using the symlinks -->
+    <ItemGroup Condition ="@(ReferenceCopyLocalPathsOnDifferentDrive) != ''">
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPathsOnDifferentDrive)" />
+      <ReferenceCopyLocalPaths Include="@(ReferenceCopyLocalPathsOnDifferentDrive->'%(Symlink)')" />
+    </ItemGroup>
+  </Target>
+  
+  <Target Name="IgnoreBuildingInsideVisualStudio">
+    <PropertyGroup>
+      <_BuildingInsideVisualStudio>$(BuildingInsideVisualStudio)</_BuildingInsideVisualStudio>
+      <BuildingInsideVisualStudio>false</BuildingInsideVisualStudio>
+    </PropertyGroup>
+  </Target>
+  
+  <Target Name="RestoreBuildingInsideVisualStudio">
+    <PropertyGroup>
+      <BuildingInsideVisualStudio>$(_BuildingInsideVisualStudio)</BuildingInsideVisualStudio>
+    </PropertyGroup>
+  </Target>
   
   <!-- extensibility: allow solutions to define custom output path logic using After.CustomOutputPath.targets, if it exists in solution's directory -->
   <Import Project="$(SolutionDir)After.CustomOutputPath.targets" Condition="Exists('$(SolutionDir)After.CustomOutputPath.targets')"/>
@@ -93,3 +162,4 @@
   <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile="$(MSBuildThisFileDirectory)CustomOutputPath.Tasks.dll" />
 
 </Project>
+<!-- ReSharper restore UnknownTask -->

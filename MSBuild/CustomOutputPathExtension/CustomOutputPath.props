@@ -6,6 +6,9 @@
   
     BaseOutputPath:
     The base directory where the Obj and Bin directories will be created. The solution name/project name are automatically appended.
+    
+    UseLinksInOutputDirectory:
+    If true then the output directory will contain hard links or symbolic links to project's output and references. Use to reduce the space used on disk.
   
   -->
 
@@ -14,6 +17,8 @@
     <!-- set the BaseOutput as value of environment variable 'MSBuildBaseOutputPath' or use a default value -->
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">$(MSBuildBaseOutputPath)</BaseOutputPath>
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">R:\Build\</BaseOutputPath>
+    <!-- enable the use of links in output directory unless specified otherwise -->
+    <UseLinksInOutputDirectory Condition="'$(UseLinksInOutputDirectory)' == ''">true</UseLinksInOutputDirectory>
   </PropertyGroup>
 
 </Project>

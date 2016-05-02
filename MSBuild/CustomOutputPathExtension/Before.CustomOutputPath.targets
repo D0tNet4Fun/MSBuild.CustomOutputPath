@@ -1,4 +1,6 @@
-﻿<!-- This runs before Microsoft.Common.targets -->
+﻿<!--EXTERNAL_PROPERTIES: UseLinksInOutputDirectory-->
+
+<!-- This runs before Microsoft.Common.targets -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   
   <Import Project="$(MSBuildThisFileDirectory)CustomOutputPath.props" />
@@ -12,7 +14,7 @@
   <!-- extensibility: allow solutions to define custom output path logic using Before.CustomOutputPath.targets if it exists in solution's directory -->
   <Import Project="$(SolutionDir)Before.CustomOutputPath.targets" Condition="Exists('$(SolutionDir)Before.CustomOutputPath.targets')"/>
 
-  <PropertyGroup Condition="$(BaseOutputPath) != ''">
+  <PropertyGroup Condition="'$(BaseOutputPath)' != ''">
     <!-- make sure the BaseOutputPath ends with \ -->
     <BaseOutputPath Condition="!HasTrailingSlash('$(BaseOutputPath)')">$(BaseOutputPath)\</BaseOutputPath>
     
@@ -33,6 +35,14 @@
     <!-- override the OutDir if it is not set at all or if it is relative -->
     <OutDir Condition="'$(OutDir)' == ''">$(ProjectBaseOutputPath)$(OutputPath)</OutDir>
     <OutDir Condition="'$(OutDir)' != '' AND !$([System.IO.Path]::IsPathRooted('$(OutDir)'))">$(ProjectBaseOutputPath)$(OutDir)</OutDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UseLinksInOutputDirectory)' == 'true'">
+    <!-- enable the built-in CreateHardLinks*** properties -->
+    <CreateHardLinksForCopyAdditionalFilesIfPossible>true</CreateHardLinksForCopyAdditionalFilesIfPossible>
+    <CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>true</CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>
+    <CreateHardLinksForCopyLocalIfPossible>true</CreateHardLinksForCopyLocalIfPossible>
+    <CreateHardLinksForPublishFilesIfPossible>true</CreateHardLinksForPublishFilesIfPossible>
   </PropertyGroup>
 
 </Project>
