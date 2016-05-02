@@ -7,10 +7,17 @@
 
   <PropertyGroup>
     <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);ConfigureOutDir</PrepareForBuildDependsOn>
-    <PrepareForRunDependsOn Condition="'$(UseLinksInOutputDirectory)' == 'true'">IgnoreBuildingInsideVisualStudio;$(PrepareForRunDependsOn);RestoreBuildingInsideVisualStudio</PrepareForRunDependsOn>
+    <PrepareForRunDependsOn Condition="'$(UseLinksInOutputDirectory)' == 'true'">_IgnoreBuildingInsideVisualStudio;$(PrepareForRunDependsOn);_RestoreBuildingInsideVisualStudio</PrepareForRunDependsOn>
   </PropertyGroup>
 
-  <Target Name="GetDefaultTargetDir">
+  <!--
+  ============================================================
+                                      _GetDefaultTargetDir
+
+  Gets the name of the default target directory i.e. bin\debug based on $(OutputPath).
+  ============================================================
+  -->
+  <Target Name="_GetDefaultTargetDir">
     <!-- fail if the OutputPath is not set; this can happen if the target is not run after AssignProjectConfiguration -->
     <Error Condition="'$(OutputPath)' == ''" Text="OutputPath is not set" />
 
@@ -30,21 +37,36 @@
     </PropertyGroup>
   </Target>
 
+  <!--
+  ============================================================
+                                      ConfigureOutDir
+
+  Configures the output directory to be either a symlink which points to the custom output directory, or the default target directory i.e. bin\debug.
+  It depends on $(UsingCustomOutputPath).
+  ============================================================
+  -->
   <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideVisualStudio)' == 'true'"
-          DependsOnTargets="GetDefaultTargetDir">
+          DependsOnTargets="_GetDefaultTargetDir">
 
     <CallTarget Condition="$(UsingCustomOutputPath) AND '$(_DefaultTargetDir)' != '$(TargetDir)'"
-                Targets="LinkDefaultTargetDirToCustomTargetDir" />
+                Targets="_LinkDefaultTargetDirToCustomTargetDir" />
     <CallTarget Condition="!$(UsingCustomOutputPath) AND $(_IsDefaultTargetDirectorySymlink)"
-                Targets="RestoreDefaultTargetDir" />
+                Targets="_RestoreDefaultTargetDir" />
   </Target>
 
-  <Target Name="LinkDefaultTargetDirToCustomTargetDir">
+  <!--
+  ============================================================
+                                      _LinkDefaultTargetDirToCustomTargetDir
+
+  Ensures the default target directory i.e. bin\debug is converted to a symlink which points to the custom target directory i.e. $(BaseOutputPath)\MySolution\MyProject\bin\debug.
+  ============================================================
+  -->
+  <Target Name="_LinkDefaultTargetDirToCustomTargetDir">
     <!-- if the default TargetDir exists and it is not a symlink, then delete it -->
     <Message Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
              Importance="normal" Text="Deleting default target directory '$(_DefaultTargetDir)' before linking it to custom target directory" />
     <CallTarget Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
-                Targets="DeleteDefaultTargetDir" />
+                Targets="_DeleteDefaultTargetDir" />
     <!-- if the default TargetDir exists and it is a symlink which points to a different location, then delete it -->
     <QuerySymlink Condition="$(_IsDefaultTargetDirectorySymlink)" LinkName="$(_DefaultTargetDir)">
       <Output TaskParameter="TargetName" PropertyName="_CurrentTargetDir" />
@@ -57,7 +79,7 @@
     <Message Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != '' AND $(_CurrentTargetDir) != '$(TargetDir)'"
              Importance="normal" Text="Deleting current target directory symlink '$(_DefaultTargetDir)' because it points to another target directory '$(_CurrentTargetDir)'" />
     <CallTarget Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != '' AND $(_CurrentTargetDir) != '$(TargetDir)'"
-                Targets="DeleteDefaultTargetDir" />
+                Targets="_DeleteDefaultTargetDir" />
     <!-- create a symlink to TargetDir -->
     <Message Condition="!Exists('$(_DefaultTargetDir)')"
              Importance="normal" Text="Creating symlink from default target directory '$(_DefaultTargetDir)' to custom target directory '$(TargetDir)'" />
@@ -66,18 +88,38 @@
                    LinkName="$(_DefaultTargetDir)" TargetName="$(TargetDir)" TargetType="Directory" />
   </Target>
 
-  <Target Name="DeleteDefaultTargetDir" DependsOnTargets="FailIfVisualStudioHostingProcessIsRunning">
+  <!--
+  ============================================================
+                                      _DeleteDefaultTargetDir
+
+  Deletes the default target directory i.e. bin\debug in case it needs to be configured as a symlink.
+  ============================================================
+  -->
+  <Target Name="_DeleteDefaultTargetDir" DependsOnTargets="_FailIfVisualStudioHostingProcessIsRunning">
     <RemoveDir Directories="$(_DefaultTargetDir)" />
   </Target>
 
-  <Target Name="RestoreDefaultTargetDir">
+  <!--
+  ============================================================
+                                      _RestoreDefaultTargetDir
+
+  Recreates the default target directory i.e. bin\debug in case it was configured as symlink by the previous build.
+  ============================================================
+  -->
+  <Target Name="_RestoreDefaultTargetDir">
     <Message Importance="normal" Text="Recreating the default target directory '$(_DefaultTargetDir)' because it is a symlink and the output path is not custom anymore" />
-    <CallTarget Targets="DeleteDefaultTargetDir" />
+    <CallTarget Targets="_DeleteDefaultTargetDir" />
     <MakeDir Directories="$(_DefaultTargetDir)" />
   </Target>
 
-  <Target Name="FailIfVisualStudioHostingProcessIsRunning" Condition="'$(TargetExt)' == '.exe' AND '$(UseVSHostingProcess)' != 'false'">
-    <!-- if the project is a EXE and UseVSHostingProcess is not false, then check if the VS hosting process is running and fail the build if so -->
+  <!--
+  ============================================================
+                                      _FailIfVisualStudioHostingProcessIsRunning
+
+  Fail the build if the project is a EXE, the VS hosting process is used for debugging and the process is running.
+  ============================================================
+  -->
+  <Target Name="_FailIfVisualStudioHostingProcessIsRunning" Condition="'$(TargetExt)' == '.exe' AND '$(UseVSHostingProcess)' != 'false'">
     <Message Importance="normal" Text="Checking if the VS hosting process is running" />
     <LookUpVisualStudioHostingProcess TargetName="$(TargetName)">
       <Output TaskParameter="IsRunning" PropertyName="_IsVSHostingProcessRunning" />
@@ -86,9 +128,18 @@
            Text="The project output directory cannot be changed while the Visual Studio hosting process is running. Please disable it manually from Project Properties > Debug. You can re-enable it after the build." />
   </Target>
 
+  <!--
+  ============================================================
+                                      CreateLinksToReferences
+
+  Resolved assembly references which are to be copied locally (ReferenceCopyLocalPaths) and which are not on the BaseOutputPath's drive (BaseOutputDrive)
+  need to be linked to a location on this drive to allow the build process to use hard links when copying these references to the output directory.
+  ============================================================
+  -->
   <Target Name="CreateLinksToReferences" 
           Condition="'$(UseLinksInOutputDirectory)' == 'true' AND '@(ReferenceCopyLocalPaths)' != ''" 
           AfterTargets="ResolveAssemblyReferences">
+
     <!-- for each resolved reference which is not on the base output drive, assign a symlink on the base output drive
            I.e if the original path is C:\Program Files (x86)\WiX Toolset v3.10\bin\wix.dll, then
                   the assigned symlink will be $(SolutionBaseOutputPath)_References\C\Program Files (x86)\WiX Toolset v3.10\bin\wix.dll -->
@@ -141,14 +192,28 @@
     </ItemGroup>
   </Target>
   
-  <Target Name="IgnoreBuildingInsideVisualStudio">
+  <!--
+  ============================================================
+                                      _IgnoreBuildingInsideVisualStudio
+
+  Disable BuildingInsideVisualStudio to allow using hardlinks when copying files to output folder. This overrides MSBuild's behavior which disallows this for some reason.
+  ============================================================
+  -->
+  <Target Name="_IgnoreBuildingInsideVisualStudio">
     <PropertyGroup>
       <_BuildingInsideVisualStudio>$(BuildingInsideVisualStudio)</_BuildingInsideVisualStudio>
       <BuildingInsideVisualStudio>false</BuildingInsideVisualStudio>
     </PropertyGroup>
   </Target>
   
-  <Target Name="RestoreBuildingInsideVisualStudio">
+  <!--
+  ============================================================
+                                      _RestoreBuildingInsideVisualStudio
+
+  Restore the previous value of BuildingInsideVisualStudio.
+  ============================================================
+  -->
+  <Target Name="_RestoreBuildingInsideVisualStudio">
     <PropertyGroup>
       <BuildingInsideVisualStudio>$(_BuildingInsideVisualStudio)</BuildingInsideVisualStudio>
     </PropertyGroup>
@@ -157,6 +222,7 @@
   <!-- extensibility: allow solutions to define custom output path logic using After.CustomOutputPath.targets, if it exists in solution's directory -->
   <Import Project="$(SolutionDir)After.CustomOutputPath.targets" Condition="Exists('$(SolutionDir)After.CustomOutputPath.targets')"/>
 
+  <!-- define tasks -->
   <UsingTask TaskName="CreateSymlink" AssemblyFile="$(MSBuildThisFileDirectory)CustomOutputPath.Tasks.dll" />
   <UsingTask TaskName="QuerySymlink" AssemblyFile="$(MSBuildThisFileDirectory)CustomOutputPath.Tasks.dll" />
   <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile="$(MSBuildThisFileDirectory)CustomOutputPath.Tasks.dll" />
