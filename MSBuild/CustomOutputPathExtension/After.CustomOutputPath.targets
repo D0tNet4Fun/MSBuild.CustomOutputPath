@@ -1,4 +1,4 @@
-﻿<!--EXTERNAL_PROPERTIES: BuildingInsideVisualStudio;UseVSHostingProcess;BaseOutputDrive;UseLinksInOutputDirectory;UsingCustomOutputPath; -->
+﻿<!--EXTERNAL_PROPERTIES: BuildingInsideVisualStudio;BuildingByReSharper;UseVSHostingProcess;BaseOutputDrive;UseLinksInOutputDirectory;UsingCustomOutputPath -->
 
 <!-- This runs after Microsoft.Common.targets -->
 
@@ -45,8 +45,7 @@
   It depends on $(UsingCustomOutputPath).
   ============================================================
   -->
-  <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideVisualStudio)' == 'true'"
-          DependsOnTargets="_GetDefaultTargetDir">
+  <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideIDE)' == 'true'" DependsOnTargets="_GetDefaultTargetDir">
 
     <CallTarget Condition="$(UsingCustomOutputPath) AND '$(_DefaultTargetDir)' != '$(TargetDir)'"
                 Targets="_LinkDefaultTargetDirToCustomTargetDir" />
