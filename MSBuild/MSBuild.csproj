@@ -50,6 +50,9 @@
     <Content Include="Microsoft.Common.Targets\ImportBefore\Before.CustomOutputPath.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="CustomOutputPathExtension\uninstall.cmd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CustomOutputPath.Tasks\CustomOutputPath.Tasks.csproj">
