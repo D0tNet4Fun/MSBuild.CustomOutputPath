@@ -83,7 +83,6 @@
     <!-- create a symlink to TargetDir -->
     <Message Condition="!Exists('$(_DefaultTargetDir)')"
              Importance="normal" Text="Creating symlink from default target directory '$(_DefaultTargetDir)' to custom target directory '$(TargetDir)'" />
-    <MakeDir Condition="!Exists('$(_DefaultTargetDir)')" Directories="$([System.IO.Path]::GetDirectoryName('$(_DefaultTargetDir)')))" />
     <CreateSymlink Condition="!Exists('$(_DefaultTargetDir)')"
                    LinkName="$(_DefaultTargetDir)" TargetName="$(TargetDir)" TargetType="Directory" />
   </Target>
@@ -162,10 +161,6 @@
       </ReferenceCopyLocalPathsOnDifferentDrive>
     </ItemGroup>
 
-    <!-- for each ReferenceCopyLocalPathsOnDifferentDrive ensure the link's directory is available,
-         i.e. $(SolutionBaseOutputPath)_References\C\Program Files (x86)\WiX Toolset v3.10\bin  -->
-    <MakeDir Condition ="'@(ReferenceCopyLocalPathsOnDifferentDrive)' != ''"
-             Directories="$([System.IO.Path]::GetDirectoryName('%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)'))" />
     <!-- for each ReferenceCopyLocalPathsOnDifferentDrive check if it already has a symlink in the _References directory and if so, that it points to the original path -->
     <QuerySymlink Condition="'@(ReferenceCopyLocalPathsOnDifferentDrive)' != '' AND Exists('%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)')"
                   LinkName="%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)">
