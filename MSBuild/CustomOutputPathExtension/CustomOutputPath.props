@@ -14,9 +14,11 @@
 
   <!-- Hint: change condition below to 'false' to restore default build behavior -->
   <PropertyGroup Condition="'$(SolutionName)' != 'MSBuild.CustomOutputPath'">
-    <!-- set the BaseOutput as value of environment variable 'MSBuildBaseOutputPath' or use a default value -->
+    <!-- set the BaseOutput as value of environment variable 'MSBuildBaseOutputPath' -->
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">$(MSBuildBaseOutputPath)</BaseOutputPath>
-    <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">R:\Build\</BaseOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BaseOutputPath)' != ''">
     <!-- enable the use of links in output directory unless specified otherwise -->
     <UseLinksInOutputDirectory Condition="'$(UseLinksInOutputDirectory)' == ''">true</UseLinksInOutputDirectory>
   </PropertyGroup>

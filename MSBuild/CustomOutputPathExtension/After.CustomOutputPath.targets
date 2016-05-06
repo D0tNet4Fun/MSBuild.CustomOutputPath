@@ -1,13 +1,14 @@
-﻿<!--EXTERNAL_PROPERTIES: BuildingInsideVisualStudio;BuildingByReSharper;UseVSHostingProcess;BaseOutputDrive;UseLinksInOutputDirectory;UsingCustomOutputPath -->
+﻿<!--EXTERNAL_PROPERTIES: BuildingInsideVisualStudio;BuildingByReSharper;UseVSHostingProcess;BaseOutputDrive;UseLinksInOutputDirectory;UsingCustomOutputPath;IsBaseOutputDriveAvailable -->
 
 <!-- This runs after Microsoft.Common.targets -->
 
 <!-- ReSharper disable UnknownTask -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!-- override MSBuild target dependencies -->
   <PropertyGroup>
     <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);ConfigureOutDir</PrepareForBuildDependsOn>
-    <PrepareForRunDependsOn Condition="'$(UseLinksInOutputDirectory)' == 'true'">_IgnoreBuildingInsideVisualStudio;$(PrepareForRunDependsOn);_RestoreBuildingInsideVisualStudio</PrepareForRunDependsOn>
+    <PrepareForRunDependsOn Condition="'$(IsBaseOutputDriveAvailable)' == 'true' AND '$(UseLinksInOutputDirectory)' == 'true'">_IgnoreBuildingInsideVisualStudio;$(PrepareForRunDependsOn);_RestoreBuildingInsideVisualStudio</PrepareForRunDependsOn>
   </PropertyGroup>
 
   <!--
@@ -47,7 +48,7 @@
   -->
   <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideIDE)' == 'true'" DependsOnTargets="_GetDefaultTargetDir">
 
-    <CallTarget Condition="$(UsingCustomOutputPath) AND '$(_DefaultTargetDir)' != '$(TargetDir)'"
+    <CallTarget Condition="$(UsingCustomOutputPath) AND '$(_DefaultTargetDir)' != '$(TargetDir)' AND '$(IsBaseOutputDriveAvailable)' == 'true'"
                 Targets="_LinkDefaultTargetDirToCustomTargetDir" />
     <CallTarget Condition="!$(UsingCustomOutputPath) AND $(_IsDefaultTargetDirectorySymlink)"
                 Targets="_RestoreDefaultTargetDir" />
@@ -135,7 +136,7 @@
   ============================================================
   -->
   <Target Name="CreateLinksToReferences" 
-          Condition="'$(UseLinksInOutputDirectory)' == 'true' AND '@(ReferenceCopyLocalPaths)' != ''" 
+          Condition="'$(UseLinksInOutputDirectory)' == 'true' AND '@(ReferenceCopyLocalPaths)' != '' AND '$(IsBaseOutputDriveAvailable)' == 'true'" 
           AfterTargets="ResolveAssemblyReferences">
 
     <!-- for each resolved reference which is not on the base output drive, assign a symlink on the base output drive
@@ -214,7 +215,7 @@
   </Target>
   
   <!-- extensibility: allow solutions to define custom output path logic using After.CustomOutputPath.targets, if it exists in solution's directory -->
-  <Import Project="$(SolutionDir)After.CustomOutputPath.targets" Condition="Exists('$(SolutionDir)After.CustomOutputPath.targets')"/>
+  <Import Project="$(SolutionDir)After.CustomOutputPath.targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)After.CustomOutputPath.targets')"/>
 
   <!-- define tasks -->
   <UsingTask TaskName="CreateSymlink" AssemblyFile=".\CustomOutputPath.Tasks.dll" />

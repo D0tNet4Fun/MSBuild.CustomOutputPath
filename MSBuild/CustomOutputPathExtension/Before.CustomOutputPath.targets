@@ -18,7 +18,7 @@
   </PropertyGroup>
   
   <!-- extensibility: allow solutions to define custom output path logic using Before.CustomOutputPath.targets if it exists in solution's directory -->
-  <Import Project="$(SolutionDir)Before.CustomOutputPath.targets" Condition="Exists('$(SolutionDir)Before.CustomOutputPath.targets')"/>
+  <Import Project="$(SolutionDir)Before.CustomOutputPath.targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)Before.CustomOutputPath.targets')"/>
 
   <PropertyGroup Condition="'$(BaseOutputPath)' != ''">
     <!-- make sure the BaseOutputPath ends with \ -->
@@ -30,7 +30,16 @@
     <!-- example R:\Build\MySolution\ -->
     <ProjectBaseOutputPath>$(SolutionBaseOutputPath)$(MSBuildProjectName)\</ProjectBaseOutputPath>
     <!-- example R:\Build\MySolution\MyProject\ -->
+  </PropertyGroup>
 
+  <!-- set the IsBaseOutputDriveAvailable property -->
+  <PropertyGroup>
+    <IsBaseOutputDriveAvailable>false</IsBaseOutputDriveAvailable>
+    <IsBaseOutputDriveAvailable Condition="'$(BaseOutputDrive)' != '' AND Exists('$(BaseOutputDrive):\')">true</IsBaseOutputDriveAvailable>
+  </PropertyGroup>
+
+  <!--override built-in MSBuild properties but only if the base output drive is avaiable -->
+  <PropertyGroup Condition="'$(IsBaseOutputDriveAvailable)' == 'true'">
     <!-- override the BaseIntermediateOutputPath if it is not set at all or if it is relative -->
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(ProjectBaseOutputPath)obj\</BaseIntermediateOutputPath>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' != '' AND !$([System.IO.Path]::IsPathRooted('$(BaseIntermediateOutputPath)'))">$(ProjectBaseOutputPath)$(BaseIntermediateOutputPath)</BaseIntermediateOutputPath>
@@ -43,12 +52,26 @@
     <OutDir Condition="'$(OutDir)' != '' AND !$([System.IO.Path]::IsPathRooted('$(OutDir)'))">$(ProjectBaseOutputPath)$(OutDir)</OutDir>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(UseLinksInOutputDirectory)' == 'true'">
+  <PropertyGroup Condition="'$(UseLinksInOutputDirectory)' == 'true' AND '$(IsBaseOutputDriveAvailable)' == 'true'">
     <!-- enable the built-in CreateHardLinks*** properties -->
     <CreateHardLinksForCopyAdditionalFilesIfPossible>true</CreateHardLinksForCopyAdditionalFilesIfPossible>
     <CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>true</CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>
     <CreateHardLinksForCopyLocalIfPossible>true</CreateHardLinksForCopyLocalIfPossible>
     <CreateHardLinksForPublishFilesIfPossible>true</CreateHardLinksForPublishFilesIfPossible>
   </PropertyGroup>
+
+  <!--
+  ============================================================
+                                      _CheckForInvalidBaseOutputPath
+
+  Warns if property BaseOutputPath is not set and fails the build if the base output drive is N/A.
+  ============================================================
+  -->
+  <Target Name="_CheckForInvalidBaseOutputPath" BeforeTargets="BeforeBuild">
+    <Warning Condition="'$(BaseOutputPath)' == ''" 
+             Text="[MSBuild.CustomOutputPath] The environment variable 'MSBuildBaseOutputPath' is not configured on your system. Until then, the build will continue to use the default output paths." />
+    <Error Condition="'$(BaseOutputPath)' != '' AND '$(IsBaseOutputDriveAvailable)' != 'true'"
+           Text="[MSBuild.CustomOutputPath] The base output path '$(BaseOutputPath)' is on a drive which is not currently available." />
+  </Target>
 
 </Project>
