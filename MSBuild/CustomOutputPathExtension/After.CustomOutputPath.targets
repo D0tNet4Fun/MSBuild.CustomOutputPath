@@ -1,7 +1,15 @@
-﻿<!--EXTERNAL_PROPERTIES: BuildingInsideVisualStudio;BuildingByReSharper;UseVSHostingProcess;BaseOutputDrive;UseLinksInOutputDirectory;UsingCustomOutputPath;IsBaseOutputDriveAvailable -->
+﻿<!--
+***********************************************************************************************
+After.CustomOutputPath.targets
 
-<!-- This runs after Microsoft.Common.targets -->
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
 
+***********************************************************************************************
+-->
+
+<!--EXTERNAL_PROPERTIES: BuildingInsideVisualStudio;BuildingInsideIDE;UseVSHostingProcess;BaseOutputPath;BaseOutputDrive;IsBaseOutputDriveAvailable;UseLinksInOutputDirectory;UsingCustomOutputPath;-->
 <!-- ReSharper disable UnknownTask -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
