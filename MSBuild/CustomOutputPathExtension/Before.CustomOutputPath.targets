@@ -25,9 +25,6 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
   <PropertyGroup>
     <BuildingInsideIDE Condition="'$(BuildingInsideVisualStudio)' == 'true' OR '$(BuildingByReSharper)' == 'true'">true</BuildingInsideIDE>
   </PropertyGroup>
-  
-  <!-- extensibility: allow solutions to define custom output path logic using Before.CustomOutputPath.targets if it exists in solution's directory -->
-  <Import Project="$(SolutionDir)Before.CustomOutputPath.targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)Before.CustomOutputPath.targets')"/>
 
   <PropertyGroup Condition="'$(BaseOutputPath)' != ''">
     <!-- make sure the BaseOutputPath ends with \ -->
@@ -46,6 +43,9 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
     <IsBaseOutputDriveAvailable>false</IsBaseOutputDriveAvailable>
     <IsBaseOutputDriveAvailable Condition="'$(BaseOutputDrive)' != '' AND Exists('$(BaseOutputDrive):\')">true</IsBaseOutputDriveAvailable>
   </PropertyGroup>
+
+  <!-- extensibility: allow solutions to define custom output path logic using Before.CustomOutputPath.targets if it exists in solution's directory -->
+  <Import Project="$(SolutionDir)Before.CustomOutputPath.targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)Before.CustomOutputPath.targets')"/>
 
   <!--override built-in MSBuild properties but only if the base output drive is avaiable -->
   <PropertyGroup Condition="'$(IsBaseOutputDriveAvailable)' == 'true'">
