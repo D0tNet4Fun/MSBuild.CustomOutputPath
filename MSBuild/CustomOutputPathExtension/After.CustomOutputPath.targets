@@ -56,9 +56,9 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
   -->
   <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideIDE)' == 'true'" DependsOnTargets="_GetDefaultTargetDir">
 
-    <CallTarget Condition="$(UsingCustomOutputPath) AND '$(_DefaultTargetDir)' != '$(TargetDir)' AND '$(IsBaseOutputDriveAvailable)' == 'true'"
+    <CallTarget Condition="'$(UsingCustomOutputPath)' == 'true' AND '$(_DefaultTargetDir)' != '$(TargetDir)' AND '$(IsBaseOutputDriveAvailable)' == 'true'"
                 Targets="_LinkDefaultTargetDirToCustomTargetDir" />
-    <CallTarget Condition="!$(UsingCustomOutputPath) AND $(_IsDefaultTargetDirectorySymlink)"
+    <CallTarget Condition="'$(UsingCustomOutputPath)' != 'true' AND $(_IsDefaultTargetDirectorySymlink)"
                 Targets="_RestoreDefaultTargetDir" />
   </Target>
 
