@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="NativeMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tasks\ConvertToSymlink.cs" />
     <Compile Include="Tasks\CreateSymlink.cs" />
     <Compile Include="Tasks\LookUpVisualStudioHostingProcess.cs" />
     <Compile Include="Tasks\QuerySymlink.cs" />

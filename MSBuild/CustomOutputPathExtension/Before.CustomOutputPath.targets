@@ -14,6 +14,12 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
   
   <Import Project=".\CustomOutputPath.props" />
 
+  <!-- define tasks -->
+  <UsingTask TaskName="CreateSymlink" AssemblyFile=".\CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="QuerySymlink" AssemblyFile=".\CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="ConvertToSymlink" AssemblyFile=".\CustomOutputPath.Tasks.dll" />
+  <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile=".\CustomOutputPath.Tasks.dll" />
+
   <!-- define property UsingCustomOutputPath which can be used in scripts to detect if a custom output path is being used -->
   <PropertyGroup>
     <UsingCustomOutputPath Condition="'$(BaseOutputPath)' != ''" >true</UsingCustomOutputPath>

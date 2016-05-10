@@ -75,24 +75,9 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
              Importance="normal" Text="Deleting default target directory '$(_DefaultTargetDir)' before linking it to custom target directory" />
     <CallTarget Condition="Exists('$(_DefaultTargetDir)') AND !$(_IsDefaultTargetDirectorySymlink)"
                 Targets="_DeleteDefaultTargetDir" />
-    <!-- if the default TargetDir exists and it is a symlink which points to a different location, then delete it -->
-    <QuerySymlink Condition="$(_IsDefaultTargetDirectorySymlink)" LinkName="$(_DefaultTargetDir)">
-      <Output TaskParameter="TargetName" PropertyName="_CurrentTargetDir" />
-    </QuerySymlink>
-    <PropertyGroup>
-      <_CurrentTargetDir Condition="'$(_CurrentTargetDir)' != '' AND !HasTrailingSlash('$(_CurrentTargetDir)')">$(_CurrentTargetDir)\</_CurrentTargetDir>
-    </PropertyGroup>
-    <Message Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != ''"
-             Importance="low" Text="The default target directory is a symlink which points to '$(_CurrentTargetDir)'" />
-    <Message Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != '' AND $(_CurrentTargetDir) != '$(TargetDir)'"
-             Importance="normal" Text="Deleting current target directory symlink '$(_DefaultTargetDir)' because it points to another target directory '$(_CurrentTargetDir)'" />
-    <CallTarget Condition="$(_IsDefaultTargetDirectorySymlink) AND '$(_CurrentTargetDir)' != '' AND $(_CurrentTargetDir) != '$(TargetDir)'"
-                Targets="_DeleteDefaultTargetDir" />
-    <!-- create a symlink to TargetDir -->
-    <Message Condition="!Exists('$(_DefaultTargetDir)')"
-             Importance="normal" Text="Creating symlink from default target directory '$(_DefaultTargetDir)' to custom target directory '$(TargetDir)'" />
-    <CreateSymlink Condition="!Exists('$(_DefaultTargetDir)')"
-                   LinkName="$(_DefaultTargetDir)" TargetName="$(TargetDir)" TargetType="Directory" />
+    <ConvertToSymlink LinkName="$(_DefaultTargetDir)"
+                      TargetName="$(TargetDir)"
+                      TargetType="Directory" />
   </Target>
 
   <!--
@@ -224,11 +209,6 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
   
   <!-- extensibility: allow solutions to define custom output path logic using After.CustomOutputPath.targets, if it exists in solution's directory -->
   <Import Project="$(SolutionDir)After.CustomOutputPath.targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)After.CustomOutputPath.targets')"/>
-
-  <!-- define tasks -->
-  <UsingTask TaskName="CreateSymlink" AssemblyFile=".\CustomOutputPath.Tasks.dll" />
-  <UsingTask TaskName="QuerySymlink" AssemblyFile=".\CustomOutputPath.Tasks.dll" />
-  <UsingTask TaskName="LookUpVisualStudioHostingProcess" AssemblyFile=".\CustomOutputPath.Tasks.dll" />
 
 </Project>
 <!-- ReSharper restore UnknownTask -->
