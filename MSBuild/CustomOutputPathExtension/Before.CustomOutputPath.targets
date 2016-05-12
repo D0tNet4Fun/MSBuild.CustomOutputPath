@@ -48,6 +48,12 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
     <IsBaseOutputDriveAvailable>false</IsBaseOutputDriveAvailable>
     <IsBaseOutputDriveAvailable Condition="'$(BaseOutputDrive)' != '' AND Exists('$(BaseOutputDrive):\')">true</IsBaseOutputDriveAvailable>
   </PropertyGroup>
+  
+  <!-- set IsApplication and IsTestProject properties if applicable -->
+  <PropertyGroup>
+    <IsApplication Condition="'$(OutputType)' == 'exe' OR '$(OutputType)' == 'winexe'">true</IsApplication>
+    <IsTestProject Condition="$(ProjectTypeGuids.Contains('{3AC096D0-A1C2-E12C-1390-A8335801FDAB}'))">true</IsTestProject>
+  </PropertyGroup>
 
   <!-- extensibility: allow solutions to define custom output path logic using Before.CustomOutputPath.targets if it exists in solution's directory -->
   <Import Project="$(SolutionDir)Before.CustomOutputPath.targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)Before.CustomOutputPath.targets')"/>

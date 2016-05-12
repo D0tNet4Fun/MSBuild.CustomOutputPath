@@ -56,8 +56,15 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
   -->
   <Target Name="ConfigureOutDir" Condition="'$(BuildingInsideIDE)' == 'true'" DependsOnTargets="_GetDefaultTargetDir">
 
-    <CallTarget Condition="'$(UsingCustomOutputPath)' == 'true' AND '$(_DefaultTargetDir)' != '$(TargetDir)' AND '$(IsBaseOutputDriveAvailable)' == 'true'"
+    <PropertyGroup Condition="'$(CreateLinkToOutputDirectory)' != ''">
+      <_CreateLinkToOutputDirectory Condition="'$(CreateLinkToOutputDirectory)' == 'true'">true</_CreateLinkToOutputDirectory>
+      <_CreateLinkToOutputDirectory Condition="'$(CreateLinkToOutputDirectory)' == 'IfApplicationOrTest' AND ('$(IsApplication)' == 'true' OR '$(IsTestProject)' == 'true')">true</_CreateLinkToOutputDirectory>
+    </PropertyGroup>    
+
+    <CallTarget Condition="'$(UsingCustomOutputPath)' == 'true' AND '$(IsBaseOutputDriveAvailable)' == 'true' AND '$(_DefaultTargetDir)' != '$(TargetDir)' AND '$(_CreateLinkToOutputDirectory)' == 'true'"
                 Targets="_LinkDefaultTargetDirToCustomTargetDir" />
+    <CallTarget Condition="'$(UsingCustomOutputPath)' == 'true' AND '$(_CreateLinkToOutputDirectory)' != 'true' AND $(_IsDefaultTargetDirectorySymlink)"
+                Targets="_DeleteDefaultTargetDir" />
     <CallTarget Condition="'$(UsingCustomOutputPath)' != 'true' AND $(_IsDefaultTargetDirectorySymlink)"
                 Targets="_RestoreDefaultTargetDir" />
   </Target>

@@ -30,6 +30,9 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BaseOutputPath)' != ''">
+    <!--create a link from the default output directory (i.e. bin\Debug) to the custom output directory;
+        values: true, IfApplicationOrTest, false -->
+    <CreateLinkToOutputDirectory Condition="'$(CreateLinkToOutputDirectory)' == ''">IfApplicationOrTest</CreateLinkToOutputDirectory>
     <!-- enable the use of links in output directory unless specified otherwise -->
     <UseLinksInOutputDirectory Condition="'$(UseLinksInOutputDirectory)' == ''">true</UseLinksInOutputDirectory>
   </PropertyGroup>
