@@ -169,7 +169,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
     <!-- ReSharper restore UnknownMetadata -->
 
     <!-- now we can proceed with creating the symlinks -->
-    <Message Condition ="'@(ReferenceCopyLocalPathsOnDifferentDrive)' != ''"
+    <Message Condition ="'@(ReferenceCopyLocalPathsOnDifferentDrive)' != '' AND !Exists('%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)')"
              Text="Creating symlink for reference '%(ReferenceCopyLocalPathsOnDifferentDrive.Identity)' as '%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)'." />
     <CreateSymlink Condition="'@(ReferenceCopyLocalPathsOnDifferentDrive)' != '' AND !Exists('%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)')"
                    LinkName="%(ReferenceCopyLocalPathsOnDifferentDrive.Symlink)" TargetName="%(ReferenceCopyLocalPathsOnDifferentDrive.Identity)" />
