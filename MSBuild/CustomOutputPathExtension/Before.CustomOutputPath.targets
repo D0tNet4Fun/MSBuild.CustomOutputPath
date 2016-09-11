@@ -56,7 +56,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
   </PropertyGroup>
 
   <!-- extensibility: allow solutions to define custom output path logic using Before.CustomOutputPath.targets if it exists in solution's directory -->
-  <Import Project="$(SolutionDir)Before.CustomOutputPath.targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)Before.CustomOutputPath.targets')"/>
+  <Import Project="$(SolutionDir)Before.CustomOutputPath.$(SolutionFileName).targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)Before.CustomOutputPath.$(SolutionFileName).targets')"/>
 
   <!--override built-in MSBuild properties but only if the base output drive is avaiable -->
   <PropertyGroup Condition="'$(IsBaseOutputDriveAvailable)' == 'true'">

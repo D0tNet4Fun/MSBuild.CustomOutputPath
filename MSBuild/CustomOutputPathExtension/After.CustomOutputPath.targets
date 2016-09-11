@@ -215,7 +215,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
   </Target>
   
   <!-- extensibility: allow solutions to define custom output path logic using After.CustomOutputPath.targets, if it exists in solution's directory -->
-  <Import Project="$(SolutionDir)After.CustomOutputPath.targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)After.CustomOutputPath.targets')"/>
+  <Import Project="$(SolutionDir)After.CustomOutputPath.$(SolutionFileName).targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)After.CustomOutputPath.$(SolutionFileName).targets')"/>
 
 </Project>
 <!-- ReSharper restore UnknownTask -->
