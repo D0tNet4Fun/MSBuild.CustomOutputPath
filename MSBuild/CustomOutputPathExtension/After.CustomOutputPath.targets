@@ -9,7 +9,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
 ***********************************************************************************************
 -->
 
-<!--EXTERNAL_PROPERTIES: BuildingInsideVisualStudio;BuildingInsideIDE;UseVSHostingProcess;BaseOutputPath;BaseOutputDrive;IsBaseOutputDriveAvailable;UseLinksInOutputDirectory;UsingCustomOutputPath;-->
+<!--EXTERNAL_PROPERTIES: BuildingInsideVisualStudio;BuildingInsideIDE;UseVSHostingProcess;BaseOutputPath;BaseOutputDrive;IsBaseOutputDriveAvailable;UseLinksInOutputDirectory;UsingCustomOutputPath;;CreateLinkToOutputDirectory-->
 <!-- ReSharper disable UnknownTask -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
@@ -141,7 +141,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
 
     <!-- for each resolved reference which is not on the base output drive, assign a symlink on the base output drive
            I.e if the original path is C:\Program Files (x86)\WiX Toolset v3.10\bin\wix.dll, then
-                  the assigned symlink will be $(SolutionBaseOutputPath)_References\C\Program Files (x86)\WiX Toolset v3.10\bin\wix.dll -->
+                  the assigned symlink will be $(BaseOutputPath)_References\C\Program Files (x86)\WiX Toolset v3.10\bin\wix.dll -->
     
     <!-- gather info about the references to find the ones which are not on the base output drive -->
     <ItemGroup>
@@ -157,7 +157,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
       <!-- exclude the project references (%(ReferenceCopyLocalPaths.BuildReference) = true) -->
       <ReferenceCopyLocalPathsOnDifferentDrive Include="@(ReferenceCopyLocalPaths)" 
                                                Condition="'%(ReferenceCopyLocalPaths.BuildReference)' != 'true' AND '%(ReferenceCopyLocalPaths.SourceDrive)' != '$(BaseOutputDrive)'">
-        <Symlink>$(SolutionBaseOutputPath)_References\%(SourceDrive)\%(SourceRelativePath)</Symlink>
+        <Symlink>$(BaseOutputPath)_References\%(SourceDrive)\%(SourceRelativePath)</Symlink>
       </ReferenceCopyLocalPathsOnDifferentDrive>
     </ItemGroup>
 

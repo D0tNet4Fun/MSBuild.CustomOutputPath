@@ -16,7 +16,11 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
     The list of properties which change build behavior:
   
     BaseOutputPath:
-    The base directory where the Obj and Bin directories will be created. The solution name/project name are automatically appended.
+    The base directory where the Obj and Bin directories will be created. This must be an absolute path which is unique per machine.
+    I.e. if the base output path is set to R:\Build, then:
+         given a project whose path is D:\Projects\MyProject\Project1.csproj 
+         and which has the output path set to bin\Debug (which is the default)
+         then the final output path will become R:\Build\D\Projects\MyProject\bin\Debug
     
     UseLinksInOutputDirectory:
     If true then the output directory will contain hard links or symbolic links to project's output and references. Use to reduce the space used on disk.

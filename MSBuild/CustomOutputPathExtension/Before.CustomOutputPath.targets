@@ -37,10 +37,8 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
     
     <BaseOutputDrive>$([System.IO.Path]::GetPathRoot('$(BaseOutputPath)').Substring(0,1))</BaseOutputDrive>
     <!-- example R -->
-    <SolutionBaseOutputPath>$(BaseOutputPath)$(SolutionName)\</SolutionBaseOutputPath>
-    <!-- example R:\Build\MySolution\ -->
-    <ProjectBaseOutputPath>$(SolutionBaseOutputPath)$(MSBuildProjectName)\</ProjectBaseOutputPath>
-    <!-- example R:\Build\MySolution\MyProject\ -->
+    <ProjectBaseOutputPath>$([System.IO.Path]::Combine('$(BaseOutputPath)', '$(MSBuildProjectDirectory.Replace(":", ""))'))\</ProjectBaseOutputPath>
+    <!-- example R:\Build\D\MyProject\ -->
   </PropertyGroup>
 
   <!-- set the IsBaseOutputDriveAvailable property -->
