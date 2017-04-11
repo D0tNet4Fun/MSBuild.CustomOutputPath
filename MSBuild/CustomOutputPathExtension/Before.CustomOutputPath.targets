@@ -52,9 +52,26 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
     <IsApplication Condition="'$(OutputType)' == 'exe' OR '$(OutputType)' == 'winexe'">true</IsApplication>
     <IsTestProject Condition="$(ProjectTypeGuids.Contains('{3AC096D0-A1C2-E12C-1390-A8335801FDAB}'))">true</IsTestProject>
   </PropertyGroup>
-
-  <!-- extensibility: allow solutions to define custom output path logic using Before.CustomOutputPath.targets if it exists in solution's directory -->
-  <Import Project="$(SolutionDir)Before.CustomOutputPath.$(SolutionFileName).targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)Before.CustomOutputPath.$(SolutionFileName).targets')"/>
+  
+  <!-- extensibility: allow custom output path logic before and after a project imports Microsoft.Common.targets -->
+  <PropertyGroup Condition="'$(BaseOutputPath)' != ''">
+    <CustomOutputPathExtensibilityDirectory>$(MSBuildThisFileDirectory)Extensibility\</CustomOutputPathExtensibilityDirectory>
+  </PropertyGroup>
+  <!-- 1. allow solutions to define custom output logic using Before.CustomOutputPath.targets and/or After.CustomOutputPath.targets in directory .\Extensibility\$(SolutionFileName) -->
+  <PropertyGroup Condition="'$(CustomOutputPathExtensibilityDirectory)' != '' AND '$(SolutionPath)' != ''">
+    <ExtensibilitySolutionDirectory>$(CustomOutputPathExtensibilityDirectory)$(SolutionFileName)\</ExtensibilitySolutionDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ExtensibilitySolutionDirectory)' != '' AND Exists('$(ExtensibilitySolutionDirectory)')">
+    <BeforeTargetsProjectPath Condition="'$(BeforeTargetsProjectPath)' == ''">$(ExtensibilitySolutionDirectory)Before.CustomOutputPath.targets</BeforeTargetsProjectPath>
+    <AfterTargetsProjectPath Condition="'$(AfterTargetsProjectPath)' == ''">$(ExtensibilitySolutionDirectory)After.CustomOutputPath.targets</AfterTargetsProjectPath>
+  </PropertyGroup>
+  <!-- 2. allow solutions to define custom output path logic using Before.CustomOutputPath.$(SolutionFileName).targets and/or After.CustomOutputPath.$(SolutionFileName).targets, if any exists in solution's directory -->
+  <PropertyGroup Condition="'$(SolutionPath)' != '' AND ('$(BeforeTargetsProjectPath)' == '' OR '$(AfterTargetsProjectPath)' == '')">
+    <BeforeTargetsProjectPath Condition="'$(BeforeTargetsProjectPath)' == ''">$(SolutionDir)Before.CustomOutputPath.$(SolutionFileName).targets</BeforeTargetsProjectPath>
+    <AfterTargetsProjectPath Condition="'$(AfterTargetsProjectPath)' == ''">$(SolutionDir)After.CustomOutputPath.$(SolutionFileName).targets</AfterTargetsProjectPath>
+  </PropertyGroup>
+  
+  <Import Project="$(BeforeTargetsProjectPath)" Condition="'$(BeforeTargetsProjectPath)' != '' AND Exists('$(BeforeTargetsProjectPath)')"/>
 
   <!--override built-in MSBuild properties but only if the base output drive is avaiable -->
   <PropertyGroup Condition="'$(IsBaseOutputDriveAvailable)' == 'true'">

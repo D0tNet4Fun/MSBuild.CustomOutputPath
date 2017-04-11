@@ -213,9 +213,8 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
       <BuildingInsideVisualStudio>$(_BuildingInsideVisualStudio)</BuildingInsideVisualStudio>
     </PropertyGroup>
   </Target>
-  
-  <!-- extensibility: allow solutions to define custom output path logic using After.CustomOutputPath.targets, if it exists in solution's directory -->
-  <Import Project="$(SolutionDir)After.CustomOutputPath.$(SolutionFileName).targets" Condition="'$(BaseOutputPath)' != '' AND Exists('$(SolutionDir)After.CustomOutputPath.$(SolutionFileName).targets')"/>
+
+  <Import Project="$(AfterTargetsProjectPath)" Condition="'$(AfterTargetsProjectPath)' != '' AND Exists('$(AfterTargetsProjectPath)')"/>
 
 </Project>
 <!-- ReSharper restore UnknownTask -->
