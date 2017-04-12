@@ -85,7 +85,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
   Warns if property BaseOutputPath is not set and fails the build if the base output drive is N/A.
   ============================================================
   -->
-  <Target Name="_CheckForInvalidBaseOutputPath" Condition="'$(UsingCustomOutputPath)' == 'true'" BeforeTargets="BeforeBuild">
+  <Target Name="_CheckForInvalidBaseOutputPath" BeforeTargets="BeforeBuild">
     <Warning Condition="'$(BaseOutputPath)' == ''" 
              Text="[MSBuild.CustomOutputPath] The environment variable 'MSBuildBaseOutputPath' is not configured on your system. Until then, the build will continue to use the default output paths." />
     <Error Condition="'$(BaseOutputPath)' != '' AND '$(IsBaseOutputDriveAvailable)' != 'true'"
